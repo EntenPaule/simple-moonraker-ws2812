@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include <ESP8266WiFi.h>
+
 #include <ESP8266WiFiMulti.h>
 
 #include <ESP8266HTTPClient.h>
@@ -18,15 +19,15 @@ uint32_t previousMillis = 0;
 
 //Animation Variables
 //
-uint8_t k = 0, stage = 0, modus = 6;
+uint8_t k = 0, stage = 0, modus = 6; 
 uint32_t last = 0;
 //
 //end Animaton Variables
 
 const char *prefix = "http://";
-const char *postfix ="/api/printer?exclude=temperature,sd";
+const char *postfix ="/printer/objects/query?print_stats=state&virtual_sdcard=progress";
 
-String url = prefix +OCTOIP+ postfix;
+String url = prefix +moonraker+ postfix;
 const char *URL = url.c_str();
 
 ESP8266WiFiMulti WiFiMulti;
@@ -65,7 +66,6 @@ void loop() {
 
           //USE_SERIAL.print("[HTTP] GET...\n");
           // start connection and send HTTP header
-          http.addHeader("X-Api-Key", APIKEY);
           int httpCode = http.GET();
 
           // httpCode will be negative on error
@@ -77,11 +77,11 @@ void loop() {
               USE_SERIAL.println(payload);
 
               if(httpCode == HTTP_CODE_OK) {
-                // 200 get state flags..
+                // 200 get print_stats flags..
                 // Allocate JsonBuffer
                 // Use arduinojson.org/assistant to compute the capacity.
                 // {
-                //   "state": {
+                //   "print_stats": {
                 //     "flags": {
                 //       "closedOrError": false,
                 //       "error": false,
@@ -97,39 +97,39 @@ void loop() {
                 const size_t capacity = JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(7);
                 DynamicJsonBuffer jsonBuffer(capacity);
 
-                // Parse JSON object
+                // Parse JSON object 
                 JsonObject& root = jsonBuffer.parseObject(payload);
                 if (!root.success()) {
                   Serial.println(F("Parsing failed!"));
                   return;
                 }
-
-                if(root["state"]["flags"]["printing"])
+                String suche=root["result"]["status"]["print_stats"]["state"];
+                USE_SERIAL.println(suche);
+                if(suche == "printing")
                 {
                   modus = 3; // Yellow
                 }
-                else if(root["state"]["flags"]["paused"])
+                else if(suche == "paused")
                 {
                   modus = 2; // blue
                   // TBD: should display rainbow now and on
                 }
-                else if(root["state"]["flags"]["error"])
+                else if(suche == "error")
                 {
                   modus = 0; // red
                 }
-                // finsihed flag does not exist :(
-                // else if(root["state"]["flags"]["finished"])
-                // {
-
-                // }
-                else if(root["state"]["flags"]["ready"])
+                else if(suche == "standby")
                 {
                   modus = 4;
                 }
-              }
-              else if(httpCode == HTTP_CODE_UNAUTHORIZED)
+                else if(suche == "complete")
+                {
+                  modus = 7;
+                }
+                }
+                else if(httpCode == HTTP_CODE_UNAUTHORIZED)
               {
-                  // wrong api key
+                   // wrong api key
                   modus = 5; // Red
                   // TBD: should stop after 2min
               }
@@ -143,7 +143,6 @@ void loop() {
             {
                 USE_SERIAL.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
             }
-
           http.end();
       }
       else if(WiFiMulti.run() == WL_CONNECT_FAILED)
@@ -175,20 +174,19 @@ void loop() {
    case 1: {
      fade_green(&last, &k, &stage, length);
       break;
-    }
-
+   }
    case 2: {
       fade_blue(&last, &k, &stage, length);
       break;
-    }
-  case 3: {
-   fade_yellow(&last, &k, &stage, length);
+   }
+   case 3: {
+      fade_yellow(&last, &k, &stage, length);
     break;
    }
   case 4: {
       rainbow(&last, &k, &stage, length);
       break;
-    }
+   }
   case 5: {
       police(&last, &stage, length);
       break;
@@ -197,7 +195,10 @@ void loop() {
       flash(&last, &stage, length);
       break;
     }
-
+  case 7: {
+      happy_end(&last, &stage, length);
+      break;
+   }
   default: {
 
       break;
@@ -243,6 +244,31 @@ void rainbow(uint32_t* lastmillis, uint8_t* k, uint8_t* stage, uint8_t length) {
       *stage = (*stage + 1) % 3;
     }
     *k = (*k + 1) % 255;
+  }
+}
+
+void happy_end(uint32_t* lastmillis, uint8_t* stage, uint8_t length) {
+
+  unsigned long  currentmillis = millis();
+
+  if ((currentmillis - *lastmillis) >= 3000 ) {
+    *lastmillis = millis();
+    if (*stage == 0) {
+      for (int i = 0; i < length; i++) {
+        LED.setPixelColor(i, 0, 0, 0);
+      }
+      LED.show();
+      *stage = 1;
+    }
+    else {
+      if (*stage == 1) {
+        for (int i = 0; i < length; i++) {
+          LED.setPixelColor(i, 206, 94, 201);
+        }
+        LED.show();
+        *stage = 0;
+      }
+    }
   }
 }
 
@@ -399,7 +425,7 @@ void flash(uint32_t* lastmillis, uint8_t* stage, uint8_t length) {
     *lastmillis = millis();
     if (*stage == 0) {
       for (int i = 0; i < length; i++) {
-        LED.setPixelColor(i, 255, 255, 255);
+        LED.setPixelColor(i, 255, 255, 255);   //(i, 255, 255, 255);
       }
       LED.show();
       *stage = 1;
