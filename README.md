@@ -5,10 +5,7 @@
 Simple Sketch to display the printer state connected to Moonraker on a Neopixel (WS2812b or similar)
 
 It polls the Moonraker REST API periodically via a HTTP GET request. There are some delay between the real state of the printer and the of the LED, this comes do the simple polling approch. Faster polling result in lower delay but also increases the load on the ESP and on the wifi or network in general (on Moonraker too).
-
-Security Warning:
-This sketch sends unencrypted GET requests with the octoprint apikey in cleartext in the request header through your network. Although this isn't that big of a security risk though, if your octoprint is not visible to the internet (which i did not recommend anyway)
-
+ 
 ## Description:
 The color of the lamp will show you the status as follows:
 
@@ -116,26 +113,19 @@ There are 4 main configurations in the **config.h** file, which must be made by 
 	``` const char* SSID = "myWifi";```
 	the password to your Wireless Network
 
-3. Octoprint API key
-```const char* APIKEY = "FA9131811AF94AB48C6A9ED45AEF60FC";```
-	like a password to the Octoprint REST Api
-	{TBD} /doc/img/sc-octocprint-api-key.PNG
-	You can obtain your API key in the Octoprint Webinterface in the settings under API.
-	More info about the Octoprint API key in the API Documentation: [link](http://docs.octoprint.org/en/master/api/general.html#authorization)
-
-4. Octoprint Ip Address
-	the Network address to your Octoprint. Same as you need to gain acces to your web interface of octoprint.
+3. Moonraker Ip Address
+	the Network address to your Moonraker. Same as you need to gain acces to your web interface of Moonraker.
 
 ## Example User Config:
 
 ```
-#define LEDPIN D2 // where you Led is connected
-const char* SSID = "myWifi";
-const char* WPWD = "wifipassword";
-const char* APIKEY = "FA9131811AF94AB48C6A9ED45AEF60FC";
-String OCTOIP = "192.168.1.3";
-uint16_t pollInterval = 500;
-const uint8_t lenght = 1;
+  #define LEDPIN D2
+  const char* SSID = "0000000"; // wlan SSID
+  const char* WPWD = "000000"; // wlan password
+  String moonraker= "192.168.2.26"; // the ip address of Moonraker
+  uint16_t pollInterval = 1000; // ms, lower value will increase poll rate, but the animation time will limit the poll rate too
+  const uint8_t length = 1; // number of LEDs
+
 ```
 
 
