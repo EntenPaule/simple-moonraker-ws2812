@@ -18,9 +18,11 @@ The color of the lamp will show you the status as follows:
 -fade blue: Print is paused  
 -fade red: error occurred  
 -red/blue: HTTP Code Unauthorized  
--fade green: HTTP Code Conflict
--violet blink: Print complete
-
+-fade green: HTTP Code Conflict   
+-violet blink: Print complete   
+  
+ 
+  
 It will also output small informations on the serial line.
 
 # Hardware
