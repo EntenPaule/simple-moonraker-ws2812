@@ -4,7 +4,7 @@
 
 Simple Sketch to display the printer state connected to Moonraker on a Neopixel (WS2812b or similar)
 
-This is just a placeholder until a planned octoprint plugin is avialable. It polls the Moonraker REST API periodically via a HTTP GET request. There are some delay between the real state of the printer and the of the LED, this comes do the simple polling approch. Faster polling result in lower delay but also increases the load on the ESP and on the wifi or network in general (on Moonraker too).
+It polls the Moonraker REST API periodically via a HTTP GET request. There are some delay between the real state of the printer and the of the LED, this comes do the simple polling approch. Faster polling result in lower delay but also increases the load on the ESP and on the wifi or network in general (on Moonraker too).
 
 Security Warning:
 This sketch sends unencrypted GET requests with the octoprint apikey in cleartext in the request header through your network. Although this isn't that big of a security risk though, if your octoprint is not visible to the internet (which i did not recommend anyway)
